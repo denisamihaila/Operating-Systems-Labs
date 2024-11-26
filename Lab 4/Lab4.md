@@ -23,47 +23,26 @@ ex1.c
 #include <sys/wait.h>
 #include <errno.h>
 
-int main()
-{
-	pid_t pid = fork ();
-	if ( pid < 0)
-		return errno ;
-	else if ( pid == 0)
-		{
-			/* child instructions */
-			char * argv [] = {"prog" , NULL };
-			execve ("/home/iustin/Desktop/lab4/prog" , argv , NULL );
-			perror ( NULL );
-		}
-	else
-		{
-			
-			printf("Parent pid: %d\n", (int)getpid());
-			printf("Child pid: %d\n", (int)pid);
-			wait(NULL);
-		}
-}
-```
+int main(){
 
-prog.c
+pid_t pid = fork();
 
-```c
-#include <dirent.h>
-#include <stdio.h>
- 
-int main(void)
-{
-    DIR *d;
-    struct dirent *dir;
-    d = opendir("/home/iustin/Desktop/lab4");
-    
-    while ((dir = readdir(d)) != NULL)
-    {
-         printf("%s\n", dir->d_name);
-    }
-    closedir(d);
-    
-    return(0);
+if(pid < 0) {
+	return errno;
+	}
+else if(pid == 0){
+	/* child instructions */
+	char *argv2[] = {"/bin/ls", "-l", NULL};
+	execve("/bin/ls", argv2, NULL);
+	}
+else {
+	/* parent instructions */
+	printf("My PID = %d, Child PID = %d\n", getpid(), pid);
+	wait(NULL);
+	printf("Child %d finished\n", pid);
+	}
+	
+	return 0;
 }
 ```
 
@@ -100,63 +79,36 @@ ex2.c
 #include <sys/wait.h>
 #include <errno.h>
 
-
-int main(int argc, char *argv[])
-{
-        pid_t pid = fork ();
-        if ( pid < 0)
-                return errno ;
-        else if ( pid == 0)
-                {
-                 
-                        char * argvv [] = {"collatz", argv[1] , NULL };
-                        execve ("/home/iustin/Desktop/lab4/collatz" , argvv , NULL);
-                   
-                }
-        else
-		{
-
-                        printf("Parent pid: %d\n", (int)getpid());
-                        printf("Child pid: %d\n", (int)pid);
-                        wait(NULL);
-                }
-	return 0;
-}
-```
-
-collatz.c
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <errno.h>
-
-
-
-void collatz(int n) 
-{
-	printf("%d ",n);
-        if (n == 1)
-        {
-                printf("\n");
-                return;
-        }
-        else
-        {
-                if(n % 2 == 0)
-                        collatz(n/2);
-                else
-                        collatz(3*n+1);
-        }
+void collatz(int n){
+	printf("%d: ", n);
+	while(n != 1){
+		printf("%d ", n);
+		if(n % 2 == 0){
+			n /= 2;
+		}
+		else{
+			n = 3 * n + 1;
+		}
+	}
+	printf("1.\n");
 }
 
-int main(int argc, char*argv[])
-{
+
+int main(int argc, char *argv[]){
+	int n = atoi(argv[1]);
 	
-	collatz(atoi(argv[1]));
+	pid_t pid = fork();
+	
+	if(pid < 0)
+		return errno;
+	else if(pid == 0)
+		{
+		collatz(n);
+		printf("Child %d finished\n", getpid());
+		}
+	else{
+	wait(NULL);
+	}
 	return 0;
 }
 ```
@@ -188,35 +140,42 @@ ex3.c
 #include <sys/wait.h>
 #include <errno.h>
 
-int main(int argc, char *argv[])
-{
-    pid_t pids[argc - 1]; // Aici am corectat dimensiunea array-ului pids
+void collatz(int n){
+	printf("%d: ", n);
+	while(n != 1){
+		printf("%d ", n);
+		if(n % 2 == 0){
+			n /= 2;
+		}
+		else{
+			n = 3 * n + 1;
+		}
+	}
+	printf("1.\n");
+}
 
-    for (int i = 1; i < argc; i++) // Aici am schimbat condiția din <= în <
-    {
-        pids[i - 1] = fork();
-        if (pids[i - 1] < 0)
-        {
-            perror("fork");
-            exit(errno);
-        }
-
-        if (pids[i - 1] == 0)
-        {
-            printf("Child pid: %d\n", (int)getpid());
-            char *argvv[] = {"collatz", argv[i], NULL};
-            execve("/home/iustin/Desktop/lab4/collatz", argvv, NULL);
-            
-        }
-    }
-
-    for (int i = 0; i < argc - 1; i++) 
-    {
-        waitpid(pids[i], NULL, 0);
-    }
-
-    printf("Parent pid: %d\n", (int)getpid());
-    return 0;
+int main(int argc, char *argv[]){
+	printf("Starting parent %d\n", getpid());
+	for(int i=1; i<argc; i++){
+		
+	int n = atoi(argv[i]);
+		
+	pid_t pid = fork();
+	
+	if(pid < 0)
+		return errno;
+	else if(pid == 0)
+		{
+		collatz(n);
+		printf("Done Parent %d Me %d\n", getppid(), getpid());
+		exit(0);
+		}
+	}
+	
+	while(wait(NULL) > 0); //astept sa se termine toate procesele copil de executat
+	printf("All children have finished.\n");
+	
+	return 0;
 }
 
 ```
