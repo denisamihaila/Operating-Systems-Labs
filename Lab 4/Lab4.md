@@ -127,7 +127,7 @@ gcc ex3.c -o ex3
 ```
 
 ```ssh-session
-./ex3 24 12 3 4 7 8
+./ex3 9 16 25 36
 ```
 
 ex3.c
