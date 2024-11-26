@@ -94,12 +94,12 @@ gcc hello.c -o hello
 
  
 ```sh-session
-gcc -g -O0 hello.c -o hello -no-pie
+gcc -g -O0 test.s -o test -no-pie
 ```
 
 
 ```sh-session
-gdb ./hello
+gdb ./test
 ```
 	
 	
