@@ -31,7 +31,7 @@ doilea argument.
 
 ```sh-session
 gcc ex2.c  -o ex2
-./ex2 fisier1.txt fisier2.txt
+./ex2 foo bar
 ```
 
 
