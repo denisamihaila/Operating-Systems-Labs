@@ -1,3 +1,8 @@
+### Pornim OpenBSD și folosim urmatoarele date de logare:
+
+ 	login: root
+  	password: student
+
 # Ex 1 
 
 Compilati un kernel nou.
@@ -6,17 +11,17 @@ Compilati un kernel nou.
 Pentru a se compila un kernel nou se executa urmatoarele comenzi:
 
 ```ssh-session
-cd /sys/arch/$(machine)/compile/GENERIC.MP
+cd /sys/arch/$(machine)/compile/GENERIC.MP				- navigarea la sursa kernelului
 
-make obj
+make obj								
 
 make config
 
 make
 
-make install
+make install					
 
-reboot
+reboot									- repornirea sistemului
 ```
 
 # Ex 2
