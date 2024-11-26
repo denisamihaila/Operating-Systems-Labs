@@ -10,32 +10,32 @@ gcc hello.c -o hello
 ./hello
 ```
 
-# Comenzi de baza in terminalul Linux:
+# Comenzi de bază în terminalul Linux:
 	
 	man command 	-	manualul de utilizare
 	pwd		- 	directorul curent
 	ls 		-	continutul directorului curent
-	cp src tgt	- 	copiere fisiere
-	mv src tgt	- 	mutare fisiere
-	rm item 	- 	stergere fisiere
+	cp src tgt	- 	copiere fișiere
+	mv src tgt	- 	mutare fișiere
+	rm item 	- 	ștergere fișiere
 	mkdir dir 	-	creare director
-	rmdir dir 	-	stergere director gol
+	rmdir dir 	-	ștergere director gol
 	echo str 	-	repetare string
-	cd path 	-	schimba directorul curent
+	cd path 	-	schimbă directorul curent
 
 
 	. 		-	directorul curent
-	.. 		-	directorul parinte
-	cmd > file 	-	redirectionare iesire catre fisier
+	.. 		-	directorul părinte
+	cmd > file 	-	redirecționare ieșire către fisier
  	cmd1 | cmd2     -       pipe: legătură ieșire-intrare
 
 
-	strace (strace ./hello)		- 	ne arata functiile de sistem (syscalls)
+	strace (strace ./hello)		- 	ne arată funcțiile de sistem (syscalls)
 						necesare pentru a se executa executabilul
 						(ktrace + kdump)
 				
-	ldd (ldd ./hello)		-	ne arata ce biblioteci sunt necesare pentru a executa
-						fisierul executabil
+	ldd (ldd ./hello)		-	ne arată ce biblioteci sunt necesare pentru a executa
+						fișierul executabil
 						
 	nm (nm ./hello)			-	simbolurile folosite de hello.c
 	
