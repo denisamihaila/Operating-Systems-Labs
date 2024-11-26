@@ -103,7 +103,8 @@ gdb ./test
 ```
 	
 	
-	b symbol 	-	oprirea executiei la simbol
+	run		-	incepe executia programului
+ 	b symbol 	-	oprirea executiei la simbol
 	p var 		-	tipareste valoarea variabilei
 	n 		-	urmatoarea instructiune
 	c 		-	continuarea executiei
