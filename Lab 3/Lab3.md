@@ -34,7 +34,7 @@ Atentie, trebuie sa recompilati kernelul si sa reporniti sistemul de operare cu 
 
 ## pas 1: Declararea
 
-modificam fisierul /sys/kern/syscalls.master adaugand :
+Am deschis nano /sys/kern/syscalls.master și am adăugat noua funcție la finalul acestui fișier:
 
 ```c
 331   STD      { int sys_khello(const char *msg); }
@@ -53,52 +53,55 @@ pentru a regenera fisierele aferente
 
 ## pas 2 : Definirea 
 
-modificam fisierul /sys/kern/sys_generic.c adaugand :
+Am adăugat definiția funcției de sistem sys_khello în fișierul nano /sys/kern/sys_generic.c
 
 ```c
-int sys_khello(struct proc *p, void *v, register_t *retval)
-{
-    struct sys_khello *uap = v;
-    char *kermessage = (char*) malloc(100, M_TEMP, M_WAITOK);
-    copyinstr(SCARG(uap, msg), kermessage, 100, NULL);
-    printf("%s\n", kermessage);
-    free(kermessage, M_TEMP, 100);
+int sys_khello(struct proc *p, void *v, register_t *retval) {
+    struct sys_khello_args *uap = v;
+    char kmsg[100];
+
+    copyinstr(SCARG(uap, msg), kmsg, 100, NULL);
+    printf("%s\n", kmsg);  // afișează mesajul primit de la user
     return 0;
 }
+
 ```
 
 ## pas 3 : Recompilam kernelul 
 
 pentru acest pas se vor executa comenzile de la ex. 1
 
-## pas 4 : Scriem un program ca sa apeleze functia
+## pas 4 : Am creat fișierul test_khello.c și am scris un scurt cod pentru a testa funcția nouă
 
-de exemplu : 
-
-ex2.c 
 
 ```c
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include <sys/syscall.h>
 
-int main()
-{
-	syscall(331, "salut");
-	return 0;
+int main() {
+    const char *msg = "Hello from user space!";
+    int result = syscall(331, msg);
+    if (result == 0) {
+        printf("syskhello a fost apelată cu succes!\n");
+    } else {
+        perror("Eroare la apelarea sys_khello");
+    }
+    return 0;
 }
+
 ```
 
 ## pas 5 : Generam executabilul
 
 ```ssh-session
-cc ex2.c -o ex2
+cc -o test_khello test_khello.c
 ```
 
 ## pas 6 : Apelam executabilul
 
 ```ssh-session
-./ex2
+./test_khello
 ```
 
 
