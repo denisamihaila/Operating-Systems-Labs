@@ -52,7 +52,6 @@ ex1.c
 #include <pthread.h>
 #include <errno.h>
 
-
 #define MAX_RESOURCES 5
 
 int available_resources = MAX_RESOURCES;
@@ -60,75 +59,63 @@ pthread_mutex_t mtx;
 
 int decrease_count(int count) {
     pthread_mutex_lock(&mtx);
-
     if (available_resources < count) {
         pthread_mutex_unlock(&mtx);
         return -1;
-    } else {
-        available_resources -= count;
-        pthread_mutex_unlock(&mtx);
-        return 0;
     }
+    available_resources -= count;
+    pthread_mutex_unlock(&mtx);
+    return 0;
 }
 
 int increase_count(int count) {
     pthread_mutex_lock(&mtx);
-
     available_resources += count;
-
     pthread_mutex_unlock(&mtx);
-
     return 0;
 }
 
 void* thread_function(void* arg) {
     int requested_resources = *((int*)arg);
-
     if (decrease_count(requested_resources) == 0) {
-        printf("Got %d resources %d remaining\n", requested_resources, available_resources);
-
-       
-        int i, j;
-        for (i = 0; i < 1000000; i++) {
-            for (j = 0; j < 100; j++) {
-                /////////////////
-            }
-        }
-
+        printf("Got %d resources, %d remaining\n", requested_resources, available_resources);
         increase_count(requested_resources);
-        printf("Released %d resources %d remaining\n", requested_resources, available_resources);
+        printf("Released %d resources, %d remaining\n", requested_resources, available_resources);
     } else {
         printf("Not enough resources for %d\n", requested_resources);
     }
-
     return NULL;
 }
 
 int main() {
     if (pthread_mutex_init(&mtx, NULL)) {
-        perror(NULL);
+        perror("Failed to initialize mutex");
         return errno;
     }
 
     pthread_t threads[3];
-    int thread1_resources = 1;
-    int thread2_resources = 2;
-    int thread3_resources = 3;
+    int thread_resources[3] = {1, 2, 3};
 
     printf("MAX_RESOURCES = %d\n", MAX_RESOURCES);
 
-    pthread_create(&threads[0], NULL, thread_function, (void*)&thread1_resources);
-    pthread_create(&threads[1], NULL, thread_function, (void*)&thread2_resources);
-    pthread_create(&threads[2], NULL, thread_function, (void*)&thread3_resources);
+    for (int i = 0; i < 3; i++) {
+        if (pthread_create(&threads[i], NULL, thread_function, &thread_resources[i])) {
+            perror("Failed to create thread");
+            return errno;
+        }
+    }
 
-    pthread_join(threads[0], NULL);
-    pthread_join(threads[1], NULL);
-    pthread_join(threads[2], NULL);
+    for (int i = 0; i < 3; i++) {
+        if (pthread_join(threads[i], NULL)) {
+            perror("Failed to join thread");
+            return errno;
+        }
+    }
 
     pthread_mutex_destroy(&mtx);
-
-    return 0;
+    pthread_exit(NULL);
 }
+
 ```
 
 
@@ -175,43 +162,41 @@ ex2.c
 #include <semaphore.h>
 
 typedef struct {
-    int count;           
-    int total_threads;    
+    int count;
+    int total_threads;
     pthread_mutex_t mutex;
     sem_t sem;
 } Barrier;
 
-Barrier barrier; 
-
+Barrier barrier;
 
 void init_barrier(Barrier *barrier, int total_threads) {
     barrier->count = 0;
     barrier->total_threads = total_threads;
-    pthread_mutex_init(&barrier->mutex, NULL);
-    sem_init(&barrier->sem, 0, 0);
+    if (pthread_mutex_init(&barrier->mutex, NULL) != 0) {
+        perror("Failed to initialize mutex");
+        exit(EXIT_FAILURE);
+    }
+    if (sem_init(&barrier->sem, 0, 0) != 0) {
+        perror("Failed to initialize semaphore");
+        exit(EXIT_FAILURE);
+    }
 }
-
 
 void barrier_point(Barrier *barrier) {
     pthread_mutex_lock(&barrier->mutex);
-
     barrier->count++;
-
     if (barrier->count < barrier->total_threads) {
         pthread_mutex_unlock(&barrier->mutex);
         sem_wait(&barrier->sem);
     } else {
-
-        barrier->count = 0;
-	
         for (int i = 1; i < barrier->total_threads; i++) {
             sem_post(&barrier->sem);
         }
-
+        barrier->count = 0;
         pthread_mutex_unlock(&barrier->mutex);
     }
 }
-
 
 void *tfun(void *v) {
     int *tid = (int *)v;
@@ -221,8 +206,6 @@ void *tfun(void *v) {
     free(tid);
     return NULL;
 }
-
-
 
 int main() {
     int number_of_threads = 5;
@@ -234,12 +217,22 @@ int main() {
 
     for (int i = 0; i < number_of_threads; i++) {
         int *tid = malloc(sizeof(int));
+        if (tid == NULL) {
+            perror("Failed to allocate memory");
+            exit(EXIT_FAILURE);
+        }
         *tid = i;
-        pthread_create(&threads[i], NULL, tfun, tid);
+        if (pthread_create(&threads[i], NULL, tfun, tid) != 0) {
+            perror("Failed to create thread");
+            exit(EXIT_FAILURE);
+        }
     }
 
     for (int i = 0; i < number_of_threads; i++) {
-        pthread_join(threads[i], NULL);
+        if (pthread_join(threads[i], NULL) != 0) {
+            perror("Failed to join thread");
+            exit(EXIT_FAILURE);
+        }
     }
 
     pthread_mutex_destroy(&barrier.mutex);
@@ -247,5 +240,4 @@ int main() {
 
     return 0;
 }
-
 ```
