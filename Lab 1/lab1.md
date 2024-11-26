@@ -40,10 +40,9 @@ gcc hello.c -o hello
 	
 ### Pentru a vedea o comandă dintr-o secțiune anume
 
- 
-```sh-session
-$ man 1 write
-```
+	$ man 1 write          - 	descrie write(1)
+ 	$ man 2 write          - 	descrie funcția de sistem (syscall-ul) write(2)
+
 
 
  
