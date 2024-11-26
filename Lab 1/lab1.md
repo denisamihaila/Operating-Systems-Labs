@@ -38,7 +38,15 @@ gcc hello.c -o hello
 						
 	nm (nm ./hello)			-	simbolurile folosite de hello.c
 	
-	
+### Pentru a vedea o comandă dintr-o secțiune anume
+
+ 
+```sh-session
+$ man 1 write
+```
+
+
+ 
 # Pentru GDB
 
  
