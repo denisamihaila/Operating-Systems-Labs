@@ -103,12 +103,12 @@ gdb ./test
 ```
 	
 	
-	run		-	incepe executia programului
- 	b symbol 	-	oprirea executiei la simbol
-	p var 		-	tipareste valoarea variabilei
-	n 		-	urmatoarea instructiune
-	c 		-	continuarea executiei
-	q 		-	iesire
+	r  		-	incepe executia programului (run)
+ 	b symbol 	-	oprirea executiei la simbol (breakpoint; ex: b main)
+	p var 		-	tipareste valoarea variabilei (print)
+	n 		-	urmatoarea instructiune (next)
+	c 		-	continuarea executiei (continue)
+	q 		-	iesire (quit)
 
 	
 			
