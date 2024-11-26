@@ -94,7 +94,7 @@ gcc hello.c -o hello
 
  
 ```sh-session
-gcc -g -O0 hello.c -o hello
+gcc -g -O0 hello.c -o hello -no-pie
 ```
 
 
