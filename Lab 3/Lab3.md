@@ -43,7 +43,7 @@ Am deschis nano /sys/kern/syscalls.master și am adăugat noua funcție la final
 apoi apelam comanda :
 
 ```ssh_session
-cd/sys/kern && make syscalls
+cd /sys/kern && make syscalls
 ```
 pentru a regenera fisierele aferente 
 
