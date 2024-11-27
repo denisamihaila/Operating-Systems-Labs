@@ -34,10 +34,10 @@ gcc hello.c -o hello
 						necesare pentru a se executa executabilul
 						(ktrace + kdump) (system trace)
 				
-	ldd (ldd ./hello)		-	ne arată ce biblioteci sunt necesare pentru a executa
+	ldd (ldd ./hello)		-	ne arată ce biblioteci sunt necesare pentru a executa (list dynamic dependencies)
 						fișierul executabil
 						
-	nm (nm ./hello)			-	simbolurile folosite de hello.c
+	nm (nm ./hello)			-	simbolurile folosite de hello.c (name list)
 	
 ### Pentru a vedea o comandă dintr-o secțiune anume
 
