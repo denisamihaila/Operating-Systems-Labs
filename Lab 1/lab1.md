@@ -71,7 +71,7 @@ gcc hello.c -o hello
 	
 	$ mkdir test		- Creează un nou director numit "test" în directorul curent.
 	
-	$ cd test /		- Încearcă să intre în directorul "test". Slash-ul final este greșit, dar poate fi ignorat de shell.
+	$ cd test /		- Încearcă să intre în directorul "test".
 	
 	$ pwd
 	/ home / souser / test	- Afișează noul director curent, acum "/home/souser/test".
