@@ -12,16 +12,16 @@ gcc hello.c -o hello
 
 # Comenzi de bază în terminalul Linux:
 	
-	man command 	-	manualul de utilizare
-	pwd		- 	directorul curent
-	ls 		-	continutul directorului curent
-	cp src tgt	- 	copiere fișiere
-	mv src tgt	- 	mutare fișiere
-	rm item 	- 	ștergere fișiere
-	mkdir dir 	-	creare director
-	rmdir dir 	-	ștergere director gol
-	echo str 	-	repetare string
-	cd path 	-	schimbă directorul curent
+	man command 	-	manualul de utilizare (manual)
+	pwd		- 	directorul curent (print working directory)
+	ls 		-	continutul directorului curent (list)
+	cp src tgt	- 	copiere fișiere (copy source target)
+	mv src tgt	- 	mutare fișiere (move source target)
+	rm item 	- 	ștergere fișiere (remove)
+	mkdir dir 	-	creare director (make directory)
+	rmdir dir 	-	ștergere director gol (remove directory)
+	echo str 	-	repetare string 
+	cd path 	-	schimbă directorul curent (change directory)
 
 
 	. 		-	directorul curent
@@ -32,7 +32,7 @@ gcc hello.c -o hello
 
 	strace (strace ./hello)		- 	ne arată funcțiile de sistem (syscalls)
 						necesare pentru a se executa executabilul
-						(ktrace + kdump)
+						(ktrace + kdump) (system trace)
 				
 	ldd (ldd ./hello)		-	ne arată ce biblioteci sunt necesare pentru a executa
 						fișierul executabil
