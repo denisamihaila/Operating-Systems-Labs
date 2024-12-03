@@ -168,58 +168,67 @@ ex2.c
 #include <pthread.h>
 #include <semaphore.h>
 
-pthread_mutex_t mutex;
-sem_t sem;
-int count = 0, total_threads;
+pthread_mutex_t mutex; // mutex pentru sincronizare
+sem_t sem;             // semafor pentru blocarea thread-urilor
+int count = 0, total_threads; // variabile pentru contorizarea thread-urilor si nr total de thread-uri
 
+// initializeaza bariera cu numarul total de thread-uri
 void barrier_init(int n) {
     total_threads = n;
     pthread_mutex_init(&mutex, NULL);
-    sem_init(&sem, 0, 0);
+    sem_init(&sem, 0, 0); // initializeaza semaforul cu valoarea inițială 0
 }
 
+// functie pentru sincronizarea la bariera
 void barrier_point() {
-    pthread_mutex_lock(&mutex);
-    count++;
+    pthread_mutex_lock(&mutex); // blocheaza mutex-ul pt a intra in sectiunea critica
+    count++; // creste contorul thread-urilor care au ajuns la bariera
+
     if (count < total_threads) {
+        // daca nu toate thread-urile au ajuns la bariera, deblocheaza mutex-ul si asteapta semaforul
         pthread_mutex_unlock(&mutex);
         sem_wait(&sem);
     } else {
+        // cand toate thread-urile au ajuns la bariera
         for (int i = 1; i < total_threads; i++) {
-            sem_post(&sem);
+            sem_post(&sem); // trimite semnal tuturor thread-urilor care asteapta la semafor
         }
-        count = 0; // Reset pentru reutilizare
-        pthread_mutex_unlock(&mutex);
+        count = 0; // reseteaza contorul pt reutilizare
+        pthread_mutex_unlock(&mutex); // deblocheaza mutex-ul
     }
 }
 
+// functia executata de fiecare thread
 void *tfun(void *v) {
-    int tid = *(int *)v;
+    int tid = *(int *)v; // id-ul thread-ului
     printf("%d reached the barrier\n", tid);
-    barrier_point();
+    barrier_point(); // sincronizare la bariera
     printf("%d passed the barrier\n", tid);
-    free(v);
-    return NULL;
+    free(v); // elibereaza memoria alocata pentru id
+    return NULL; // se incheie thread-ul
 }
 
 int main() {
-    int number_of_threads = 5;
-    pthread_t threads[number_of_threads];
+    int number_of_threads = 5; // nr total de thread-uri
+    pthread_t threads[number_of_threads]; // array pentru stocarea thread-urilor
 
-    printf("Number of threads = %d\n", number_of_threads);
+    printf("NTHRS = %d\n", number_of_threads);
 
     barrier_init(number_of_threads);
 
+    // crearea thread-urilor
     for (int i = 0; i < number_of_threads; i++) {
-        int *tid = malloc(sizeof(int));
+        int *tid = malloc(sizeof(int)); // aloca memorie pt id-ul thread-ului
         if (tid == NULL) {
             perror("Failed to allocate memory");
             exit(EXIT_FAILURE);
         }
-        *tid = i;
-        pthread_create(&threads[i], NULL, tfun, tid);
+        *tid = i; // seteaza id-ul thread-ului
+        pthread_create(&threads[i], NULL, tfun, tid); 
+        // creeaza un thread care executa functia tfun si primeste identificatorul ca parametru
     }
 
+    // asteapta finalizarea thread-urilor
     for (int i = 0; i < number_of_threads; i++) {
         pthread_join(threads[i], NULL);
     }
@@ -229,4 +238,5 @@ int main() {
 
     return 0;
 }
+
 ```
