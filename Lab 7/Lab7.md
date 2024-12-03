@@ -50,35 +50,42 @@ ex1.c
 ```c
 #include <stdio.h>
 #include <pthread.h>
+#include <semaphore.h>
 
-#define MAX_RESOURCES 5
+#define MAX_RESOURCES 5 //nr maxim de resurse
 
-int available_resources = MAX_RESOURCES;
-pthread_mutex_t mtx;
+int available_resources = MAX_RESOURCES; //nr actual de resurse disponibile
+pthread_mutex_t mtx; //mutex pt sincronizare
+sem_t sem; //semafor pt sincronizarea ordinii thread-urilor
 
+//scade resursele disponibile daca sunt suficiente
 int decrease_count(int count) {
-    pthread_mutex_lock(&mtx);
+    pthread_mutex_lock(&mtx); //blocheaza mutex-ul
     if (available_resources < count) {
         pthread_mutex_unlock(&mtx);
-        return -1;
+        return -1; //resurse insuficiente
     } else {
-        available_resources -= count;
-        pthread_mutex_unlock(&mtx);
-        return 0;
+        available_resources -= count; //resurse suficiente, le scadem din total
+        pthread_mutex_unlock(&mtx); //eliberam mutex-ul dupa modificare
+        return 0; 
     }
 }
 
+//creste numarul de resurse disponibile
 int increase_count(int count) {
-    pthread_mutex_lock(&mtx);
+    pthread_mutex_lock(&mtx); //blocam mutex-ul pt a intra in zona critica
     available_resources += count;
     pthread_mutex_unlock(&mtx);
     return 0;
 }
 
 void* thread_function(void* arg) {
+    sem_wait(&sem); //asteapta semnalul pt a incepe
+
     int requested_resources = *((int*)arg);
 
     if (decrease_count(requested_resources) == 0) {
+    	//resursele au fost alocate cu succes
         printf("Got %d resources, %d remaining\n", requested_resources, available_resources);
         increase_count(requested_resources);
         printf("Released %d resources, %d remaining\n", requested_resources, available_resources);
@@ -86,26 +93,32 @@ void* thread_function(void* arg) {
         printf("Not enough resources for %d\n", requested_resources);
     }
 
-    return NULL;
+    sem_post(&sem); //permite urmatorului thread sa inceapa
+    return NULL; //se incheie thread-ul
 }
 
 int main() {
-    pthread_mutex_init(&mtx, NULL);
+    pthread_mutex_init(&mtx, NULL); //initializam mutex-ul
+    sem_init(&sem, 0, 1); //initializam semaforul cu valoarea 1
 
-    pthread_t threads[5];
-    int thread_resources[5] = {2, 2, 1, 3, 2};
+    pthread_t threads[5]; //array pt thread-uri
+    int thread_resources[5] = {2, 2, 1, 3, 2}; //resurse solicitate
 
     printf("MAX_RESOURCES = %d\n", MAX_RESOURCES);
 
+    //crearea thread-urilor
     for (int i = 0; i < 5; i++) {
-        pthread_create(&threads[i], NULL, thread_function, &thread_resources[i]);
+        pthread_create(&threads[i], NULL, thread_function, &thread_resources[i]); 
+        //fiecare executa functia thread_function, care primeste ca parametru nr de resurse solicitate
     }
 
+    //asteapta finalizarea thread-urilor
     for (int i = 0; i < 5; i++) {
         pthread_join(threads[i], NULL);
     }
 
-    pthread_mutex_destroy(&mtx);
+    pthread_mutex_destroy(&mtx); //distrugem mutex-ul
+    sem_destroy(&sem); //distrugem semaforul
 
     return 0;
 }
