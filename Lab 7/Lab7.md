@@ -138,49 +138,37 @@ ex2.c
 #include <pthread.h>
 #include <semaphore.h>
 
-typedef struct {
-    int count;
-    int total_threads;
-    pthread_mutex_t mutex;
-    sem_t sem;
-} Barrier;
+pthread_mutex_t mutex;
+sem_t sem;
+int count = 0, total_threads;
 
-Barrier barrier;
-
-void init_barrier(Barrier *barrier, int total_threads) {
-    barrier->count = 0;
-    barrier->total_threads = total_threads;
-    if (pthread_mutex_init(&barrier->mutex, NULL) != 0) {
-        perror("Failed to initialize mutex");
-        exit(EXIT_FAILURE);
-    }
-    if (sem_init(&barrier->sem, 0, 0) != 0) {
-        perror("Failed to initialize semaphore");
-        exit(EXIT_FAILURE);
-    }
+void barrier_init(int n) {
+    total_threads = n;
+    pthread_mutex_init(&mutex, NULL);
+    sem_init(&sem, 0, 0);
 }
 
-void barrier_point(Barrier *barrier) {
-    pthread_mutex_lock(&barrier->mutex);
-    barrier->count++;
-    if (barrier->count < barrier->total_threads) {
-        pthread_mutex_unlock(&barrier->mutex);
-        sem_wait(&barrier->sem);
+void barrier_point() {
+    pthread_mutex_lock(&mutex);
+    count++;
+    if (count < total_threads) {
+        pthread_mutex_unlock(&mutex);
+        sem_wait(&sem);
     } else {
-        for (int i = 1; i < barrier->total_threads; i++) {
-            sem_post(&barrier->sem);
+        for (int i = 1; i < total_threads; i++) {
+            sem_post(&sem);
         }
-        barrier->count = 0;
-        pthread_mutex_unlock(&barrier->mutex);
+        count = 0; // Reset pentru reutilizare
+        pthread_mutex_unlock(&mutex);
     }
 }
 
 void *tfun(void *v) {
-    int *tid = (int *)v;
-    printf("%d reached the barrier\n", *tid);
-    barrier_point(&barrier);
-    printf("%d passed the barrier\n", *tid);
-    free(tid);
+    int tid = *(int *)v;
+    printf("%d reached the barrier\n", tid);
+    barrier_point();
+    printf("%d passed the barrier\n", tid);
+    free(v);
     return NULL;
 }
 
@@ -190,7 +178,7 @@ int main() {
 
     printf("Number of threads = %d\n", number_of_threads);
 
-    init_barrier(&barrier, number_of_threads);
+    barrier_init(number_of_threads);
 
     for (int i = 0; i < number_of_threads; i++) {
         int *tid = malloc(sizeof(int));
@@ -199,21 +187,15 @@ int main() {
             exit(EXIT_FAILURE);
         }
         *tid = i;
-        if (pthread_create(&threads[i], NULL, tfun, tid) != 0) {
-            perror("Failed to create thread");
-            exit(EXIT_FAILURE);
-        }
+        pthread_create(&threads[i], NULL, tfun, tid);
     }
 
     for (int i = 0; i < number_of_threads; i++) {
-        if (pthread_join(threads[i], NULL) != 0) {
-            perror("Failed to join thread");
-            exit(EXIT_FAILURE);
-        }
+        pthread_join(threads[i], NULL);
     }
 
-    pthread_mutex_destroy(&barrier.mutex);
-    sem_destroy(&barrier.sem);
+    pthread_mutex_destroy(&mutex);
+    sem_destroy(&sem);
 
     return 0;
 }
