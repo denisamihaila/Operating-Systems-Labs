@@ -57,23 +57,27 @@ int available_resources = MAX_RESOURCES;
 pthread_mutex_t mtx;
 
 int decrease_count(int count) {
+    pthread_mutex_lock(&mtx);
     if (available_resources < count) {
+        pthread_mutex_unlock(&mtx);
         return -1;
     } else {
         available_resources -= count;
+        pthread_mutex_unlock(&mtx);
         return 0;
     }
 }
 
 int increase_count(int count) {
+    pthread_mutex_lock(&mtx);
     available_resources += count;
+    pthread_mutex_unlock(&mtx);
     return 0;
 }
 
 void* thread_function(void* arg) {
     int requested_resources = *((int*)arg);
 
-    pthread_mutex_lock(&mtx);
     if (decrease_count(requested_resources) == 0) {
         printf("Got %d resources, %d remaining\n", requested_resources, available_resources);
         increase_count(requested_resources);
@@ -81,7 +85,6 @@ void* thread_function(void* arg) {
     } else {
         printf("Not enough resources for %d\n", requested_resources);
     }
-    pthread_mutex_unlock(&mtx);
 
     return NULL;
 }
