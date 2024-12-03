@@ -99,7 +99,7 @@ void* thread_function(void* arg) {
 
 int main() {
     pthread_mutex_init(&mtx, NULL); //initializam mutex-ul
-    sem_init(&sem, 0, 1); //initializam semaforul cu valoarea 1
+    sem_init(&sem, 0, 1); //initializam semaforul cu valoarea 1 (adica doar un thread se poate executa deodata)
 
     pthread_t threads[5]; //array pt thread-uri
     int thread_resources[5] = {2, 2, 1, 3, 2}; //resurse solicitate
