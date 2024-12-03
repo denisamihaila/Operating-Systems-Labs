@@ -50,48 +50,31 @@ ex1.c
 ```c
 #include <stdio.h>
 #include <pthread.h>
-#include <errno.h>
 
 #define MAX_RESOURCES 5
 
 int available_resources = MAX_RESOURCES;
 pthread_mutex_t mtx;
 
-int decrease_count(int count) {
-    pthread_mutex_lock(&mtx);
-    if (available_resources < count) {
-        pthread_mutex_unlock(&mtx);
-        return -1;
-    }
-    available_resources -= count;
-    pthread_mutex_unlock(&mtx);
-    return 0;
-}
-
-int increase_count(int count) {
-    pthread_mutex_lock(&mtx);
-    available_resources += count;
-    pthread_mutex_unlock(&mtx);
-    return 0;
-}
-
 void* thread_function(void* arg) {
     int requested_resources = *((int*)arg);
-    if (decrease_count(requested_resources) == 0) {
+
+    pthread_mutex_lock(&mtx);
+    if (available_resources >= requested_resources) {
+        available_resources -= requested_resources;
         printf("Got %d resources, %d remaining\n", requested_resources, available_resources);
-        increase_count(requested_resources);
+        available_resources += requested_resources;
         printf("Released %d resources, %d remaining\n", requested_resources, available_resources);
     } else {
         printf("Not enough resources for %d\n", requested_resources);
     }
+    pthread_mutex_unlock(&mtx);
+
     return NULL;
 }
 
 int main() {
-    if (pthread_mutex_init(&mtx, NULL)) {
-        perror("Failed to initialize mutex");
-        return errno;
-    }
+    pthread_mutex_init(&mtx, NULL);
 
     pthread_t threads[3];
     int thread_resources[3] = {1, 2, 3};
@@ -99,21 +82,15 @@ int main() {
     printf("MAX_RESOURCES = %d\n", MAX_RESOURCES);
 
     for (int i = 0; i < 3; i++) {
-        if (pthread_create(&threads[i], NULL, thread_function, &thread_resources[i])) {
-            perror("Failed to create thread");
-            return errno;
-        }
+        pthread_create(&threads[i], NULL, thread_function, &thread_resources[i]);
     }
 
     for (int i = 0; i < 3; i++) {
-        if (pthread_join(threads[i], NULL)) {
-            perror("Failed to join thread");
-            return errno;
-        }
+        pthread_join(threads[i], NULL);
     }
 
     pthread_mutex_destroy(&mtx);
-    pthread_exit(NULL);
+    return 0;
 }
 
 ```
