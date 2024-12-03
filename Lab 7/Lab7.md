@@ -56,14 +56,27 @@ ex1.c
 int available_resources = MAX_RESOURCES;
 pthread_mutex_t mtx;
 
+int decrease_count(int count) {
+    if (available_resources < count) {
+        return -1;
+    } else {
+        available_resources -= count;
+        return 0;
+    }
+}
+
+int increase_count(int count) {
+    available_resources += count;
+    return 0;
+}
+
 void* thread_function(void* arg) {
     int requested_resources = *((int*)arg);
 
     pthread_mutex_lock(&mtx);
-    if (available_resources >= requested_resources) {
-        available_resources -= requested_resources;
+    if (decrease_count(requested_resources) == 0) {
         printf("Got %d resources, %d remaining\n", requested_resources, available_resources);
-        available_resources += requested_resources;
+        increase_count(requested_resources);
         printf("Released %d resources, %d remaining\n", requested_resources, available_resources);
     } else {
         printf("Not enough resources for %d\n", requested_resources);
@@ -76,20 +89,21 @@ void* thread_function(void* arg) {
 int main() {
     pthread_mutex_init(&mtx, NULL);
 
-    pthread_t threads[3];
-    int thread_resources[3] = {1, 2, 3};
+    pthread_t threads[5];
+    int thread_resources[5] = {2, 2, 1, 3, 2};
 
     printf("MAX_RESOURCES = %d\n", MAX_RESOURCES);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
         pthread_create(&threads[i], NULL, thread_function, &thread_resources[i]);
     }
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
         pthread_join(threads[i], NULL);
     }
 
     pthread_mutex_destroy(&mtx);
+
     return 0;
 }
 
